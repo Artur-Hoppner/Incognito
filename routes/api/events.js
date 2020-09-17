@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Events = require('../../model/Events');
-/* 
-@route POST api/events/register
-@desc Register the User
-@acces Public
-*/
+
+//******************************************/
+//*** Register Events: api/events/login ***/
+//****************************************/
 router.post('/register', async (req, res) => {
   let { name, place } = req.body;
 
@@ -31,6 +30,9 @@ router.post('/register', async (req, res) => {
   }
 });
 
+//***************************************/
+//*** Get all Events: api/events/all ***/
+//*************************************/
 router.get('/all', async (req, res) => {
   let allEvents = [];
   await Events.find().then((events) => {

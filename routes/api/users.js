@@ -5,11 +5,10 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const key = require('../../config/keys').secret;
 const User = require('../../model/User');
-/* 
-@route POST api/users/register
-@desc Register the User
-@acces Public
-*/
+
+//***************************************/
+//*** Registrate: api/users/register ***/
+//*************************************/
 router.post('/register', async (req, res) => {
   let { name, username, email, password, confirm_password } = req.body;
   if (password !== confirm_password) {
@@ -17,7 +16,7 @@ router.post('/register', async (req, res) => {
       msg: 'Password does not match the given one.',
     });
   }
-  // Check for unique emailß
+  // Check for unique username
   await User.findOne({ username: username }).then((user) => {
     if (user && !res.headersSent) {
       return res
@@ -47,7 +46,7 @@ router.post('/register', async (req, res) => {
       password,
       email,
     });
-    //Hash our password.
+    //Hash password.
     bcrypt.genSalt(10, (err, salt) => {
       bcrypt.hash(newUser.password, salt, (err, hash) => {
         if (err) throw err;
@@ -66,12 +65,9 @@ router.post('/register', async (req, res) => {
   }
 });
 
-/* 
-@route POST api/users/login
-@desc Signing in User
-@acces Public
-*/
-
+//*******************************/
+//*** Login: api/users/login ***/
+//*****************************/
 router.post('/login', (req, res) => {
   User.findOne({
     username: req.body.username,
