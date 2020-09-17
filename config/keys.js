@@ -3,4 +3,5 @@ let uri = `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_P
 
 module.exports = {
   mongoURI: uri,
+  secret: 'loginsecret',
 };
