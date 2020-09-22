@@ -11,6 +11,26 @@ const EventSchema = new Schema({
     type: String,
     required: true,
   },
+  date: {
+    type: String,
+    required: true,
+  },
+  typeOfEvent: {
+    type: String,
+    required: true,
+  },
+  createdBy: {
+    type: String,
+    required: true,
+  },
+  participant: {
+    type: Array,
+    required: false,
+  },
+  comments: {
+    type: String,
+    required: false,
+  },
 });
 
 module.exports = Events = mongoose.model('events', EventSchema);

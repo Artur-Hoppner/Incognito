@@ -10,8 +10,19 @@ const User = require('../../model/User');
 //*** Registrate: api/users/register ***/
 //*************************************/
 router.post('/register', async (req, res) => {
-  let { name, username, email, password, confirm_password } = req.body;
-  if (password !== confirm_password) {
+  let { name, username, email, password, verifypassword } = req.body;
+  if (
+    name == '' ||
+    username == '' ||
+    email == '' ||
+    password == '' ||
+    verifypassword == ''
+  ) {
+    return res.status(400).json({
+      msg: 'Please fill data all requred data.',
+    });
+  }
+  if (password !== verifypassword) {
     return res.status(400).json({
       msg: 'Password does not match the given one.',
     });
@@ -73,7 +84,7 @@ router.post('/login', (req, res) => {
     username: req.body.username,
   }).then((user) => {
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         msg: 'Username is not found.',
         success: false,
       });
@@ -92,9 +103,15 @@ router.post('/login', (req, res) => {
             success: true,
             token: `Bearer ${token}`,
             msg: 'You are now logged in.',
+            user: {
+              name: user.name,
+              username: user.username,
+              email: user.email,
+            },
           });
         });
       } else {
+        console.log('wrong password');
         return res
           .status(404)
           .json({ msg: 'incorrect password', success: false });
@@ -117,4 +134,5 @@ router.get(
     });
   }
 );
+
 module.exports = router;
