@@ -64,64 +64,101 @@ router.get('/all', async (req, res) => {
 //**********************************/
 //*** Create a add review route ***/
 //********************************/
-router.post('/review', async (req, res) => {
+router.post('/commentingevent', async (req, res) => {
   console.log(req.body);
-  let { place, date, typeOfEvent, createdBy } = req.body;
+  const userName = req.body.userName;
+  const newComment = req.body.comment;
+  const eventId = req.body.eventId;
+  const event = await Events.findById({ _id: eventId });
 
-  if (
-    name == '' ||
-    place == '' ||
-    date == '' ||
-    typeOfEvent == '' ||
-    createdBy == ''
-  ) {
+  try {
+    await Events.updateOne(
+      { _id: eventId },
+      { $push: { comments: [{ userName, newComment }] } }
+    );
+    return res.status(200).json({
+      msg: `Comment added to event: ${event.name}`,
+    });
+  } catch (error) {
+    console.log(error);
     return res.status(400).json({
-      msg: 'Please fill data all requred data.',
-    });
-  }
-  console.log('else starts');
-  await Events.findOne({ name: name }).then((envents) => {
-    if (envents && !res.headersSent) {
-      return res.status(400).json({
-        msg: 'Name is already taken.',
-      });
-    }
-  });
-
-  if (!res.headersSent) {
-    let newEvent = Events({
-      name,
-      place,
-      date,
-      typeOfEvent,
-      createdBy,
-    });
-
-    newEvent.save().then((event) => {
-      return res.status(201).json({
-        success: true,
-        msg: 'New event is now registered.',
-      });
+      msg: 'Something went wrong.',
     });
   }
 });
+
 //******************************************/
 //*** Create a attending to event route ***/
 //****************************************/
 router.post('/attending', async (req, res) => {
-  console.log(req.body);
-  const username = req.body.username;
-  const enevtId = req.body.value;
   try {
-    await Events.updateOne(
-      { _id: enevtId },
-      { $push: { participant: [username] } }
-    );
-    const event = await Events.findById({ _id: enevtId });
-    console.log(event);
-    return res.status(200).json({
-      msg: `Participating to event ${event.name}`,
+    console.log(req.body);
+    const username = req.body.username;
+    const eventId = req.body.value;
+    const event = await Events.findById({ _id: eventId });
+    const matchUser = event.participant.filter((participant) => {
+      return participant == username;
     });
+    if (matchUser[0] == username) {
+      await Events.updateOne(
+        { _id: eventId },
+        { $pullAll: { participant: [username] } }
+      );
+
+      console.log('if match', event.participant);
+      return res.status(200).json({
+        msg: `Dont participating to event ${event.name}`,
+      });
+    } else {
+      await Events.updateOne(
+        { _id: eventId },
+        { $push: { participant: [username] } }
+      );
+      console.log('dont match', event.participant);
+      return res.status(200).json({
+        msg: `Participating to event ${event.name}`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      msg: 'Something went wrong.',
+    });
+  }
+});
+
+//******************************************/
+//*** Create a like event route ***/
+//****************************************/
+router.post('/like', async (req, res) => {
+  try {
+    console.log(req.body);
+    const username = req.body.username;
+    const eventId = req.body.value;
+    const event = await Events.findById({ _id: eventId });
+    const matchUser = event.likes.filter((likes) => {
+      return likes == username;
+    });
+    if (matchUser[0] == username) {
+      await Events.updateOne(
+        { _id: eventId },
+        { $pullAll: { likes: [username] } }
+      );
+
+      console.log('if match', event.likes);
+      return res.status(200).json({
+        msg: `Unlike event: ${event.name}`,
+      });
+    } else {
+      await Events.updateOne(
+        { _id: eventId },
+        { $push: { likes: [username] } }
+      );
+      console.log('dont match', event.participant);
+      return res.status(200).json({
+        msg: `Like Event ${event.name}`,
+      });
+    }
   } catch (error) {
     console.log(error);
     return res.status(400).json({

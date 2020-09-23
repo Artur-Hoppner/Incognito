@@ -27,8 +27,12 @@ const EventSchema = new Schema({
     type: Array,
     required: false,
   },
+  likes: {
+    type: Array,
+    required: false,
+  },
   comments: {
-    type: String,
+    type: Array,
     required: false,
   },
 });
