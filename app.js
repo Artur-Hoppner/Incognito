@@ -18,8 +18,9 @@ app.use(
 app.use(bodyParser.json());
 app.use(cors());
 
-//Remove????
-// app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', (req, res) => {
+  return res.send('<h1>Incognito Backend</h1>');
+});
 
 app.use(passport.initialize());
 // Bring in the Passport Strategy

@@ -93,16 +93,16 @@ router.post('/commentingevent', async (req, res) => {
 router.post('/attending', async (req, res) => {
   try {
     console.log(req.body);
-    const username = req.body.username;
-    const eventId = req.body.value;
+    const userName = req.body.userName;
+    const eventId = req.body.eventId;
     const event = await Events.findById({ _id: eventId });
     const matchUser = event.participant.filter((participant) => {
-      return participant == username;
+      return participant == userName;
     });
-    if (matchUser[0] == username) {
+    if (matchUser[0] == userName) {
       await Events.updateOne(
         { _id: eventId },
-        { $pullAll: { participant: [username] } }
+        { $pullAll: { participant: [userName] } }
       );
 
       console.log('if match', event.participant);
@@ -112,7 +112,7 @@ router.post('/attending', async (req, res) => {
     } else {
       await Events.updateOne(
         { _id: eventId },
-        { $push: { participant: [username] } }
+        { $push: { participant: [userName] } }
       );
       console.log('dont match', event.participant);
       return res.status(200).json({
@@ -133,16 +133,16 @@ router.post('/attending', async (req, res) => {
 router.post('/like', async (req, res) => {
   try {
     console.log(req.body);
-    const username = req.body.username;
-    const eventId = req.body.value;
+    const userName = req.body.userName;
+    const eventId = req.body.eventId;
     const event = await Events.findById({ _id: eventId });
     const matchUser = event.likes.filter((likes) => {
-      return likes == username;
+      return likes == userName;
     });
-    if (matchUser[0] == username) {
+    if (matchUser[0] == userName) {
       await Events.updateOne(
         { _id: eventId },
-        { $pullAll: { likes: [username] } }
+        { $pullAll: { likes: [userName] } }
       );
 
       console.log('if match', event.likes);
@@ -152,7 +152,7 @@ router.post('/like', async (req, res) => {
     } else {
       await Events.updateOne(
         { _id: eventId },
-        { $push: { likes: [username] } }
+        { $push: { likes: [userName] } }
       );
       console.log('dont match', event.participant);
       return res.status(200).json({
