@@ -5,19 +5,29 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const key = require('../../config/keys').secret;
 const User = require('../../model/User');
-/* 
-@route POST api/users/register
-@desc Register the User
-@acces Public
-*/
+
+//***************************************/
+//*** Registrate: api/users/register ***/
+//*************************************/
 router.post('/register', async (req, res) => {
-  let { name, username, email, password, confirm_password } = req.body;
-  if (password !== confirm_password) {
+  let { name, username, email, password, verifypassword } = req.body;
+  if (
+    name == '' ||
+    username == '' ||
+    email == '' ||
+    password == '' ||
+    verifypassword == ''
+  ) {
+    return res.status(400).json({
+      msg: 'Please fill data all requred data.',
+    });
+  }
+  if (password !== verifypassword) {
     return res.status(400).json({
       msg: 'Password does not match the given one.',
     });
   }
-  // Check for unique emailß
+  // Check for unique username
   await User.findOne({ username: username }).then((user) => {
     if (user && !res.headersSent) {
       return res
@@ -47,7 +57,7 @@ router.post('/register', async (req, res) => {
       password,
       email,
     });
-    //Hash our password.
+    //Hash password.
     bcrypt.genSalt(10, (err, salt) => {
       bcrypt.hash(newUser.password, salt, (err, hash) => {
         if (err) throw err;
@@ -66,18 +76,15 @@ router.post('/register', async (req, res) => {
   }
 });
 
-/* 
-@route POST api/users/login
-@desc Signing in User
-@acces Public
-*/
-
+//*******************************/
+//*** Login: api/users/login ***/
+//*****************************/
 router.post('/login', (req, res) => {
   User.findOne({
     username: req.body.username,
   }).then((user) => {
     if (!user) {
-      return res.status(404).json({
+      res.status(404).json({
         msg: 'Username is not found.',
         success: false,
       });
@@ -96,9 +103,15 @@ router.post('/login', (req, res) => {
             success: true,
             token: `Bearer ${token}`,
             msg: 'You are now logged in.',
+            user: {
+              name: user.name,
+              username: user.username,
+              email: user.email,
+            },
           });
         });
       } else {
+        console.log('wrong password');
         return res
           .status(404)
           .json({ msg: 'incorrect password', success: false });
@@ -121,4 +134,5 @@ router.get(
     });
   }
 );
+
 module.exports = router;

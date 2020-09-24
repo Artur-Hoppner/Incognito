@@ -1,18 +1,28 @@
 const express = require('express');
 const router = express.Router();
 const Events = require('../../model/Events');
-/* 
-@route POST api/events/register
-@desc Register the User
-@acces Public
-*/
-router.post('/register', async (req, res) => {
-  let { name, place } = req.body;
 
+//*********************************************/
+//*** Register Events: api/events/register ***/
+//*******************************************/
+router.post('/register', async (req, res) => {
+  let { name, place, date, typeOfEvent, createdBy } = req.body;
+  if (
+    name == '' ||
+    place == '' ||
+    date == '' ||
+    typeOfEvent == '' ||
+    createdBy == ''
+  ) {
+    return res.status(400).json({
+      msg: 'Please fill data all requred data.',
+    });
+  }
+  console.log('else starts');
   await Events.findOne({ name: name }).then((envents) => {
     if (envents && !res.headersSent) {
       return res.status(400).json({
-        msg: 'enventname is already taken.',
+        msg: 'Name is already taken.',
       });
     }
   });
@@ -20,6 +30,9 @@ router.post('/register', async (req, res) => {
     let newEvent = Events({
       name,
       place,
+      date,
+      typeOfEvent,
+      createdBy,
     });
 
     newEvent.save().then((event) => {
@@ -31,6 +44,9 @@ router.post('/register', async (req, res) => {
   }
 });
 
+//***************************************/
+//*** Get all Events: api/events/all ***/
+//*************************************/
 router.get('/all', async (req, res) => {
   let allEvents = [];
   await Events.find().then((events) => {
@@ -45,4 +61,109 @@ router.get('/all', async (req, res) => {
     .end();
 });
 
+//**********************************/
+//*** Create a add review route ***/
+//********************************/
+router.post('/commentingevent', async (req, res) => {
+  console.log(req.body);
+  const userName = req.body.userName;
+  const newComment = req.body.comment;
+  const eventId = req.body.eventId;
+  const event = await Events.findById({ _id: eventId });
+
+  try {
+    await Events.updateOne(
+      { _id: eventId },
+      { $push: { comments: [{ userName, newComment }] } }
+    );
+    return res.status(200).json({
+      msg: `Comment added to event: ${event.name}`,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      msg: 'Something went wrong.',
+    });
+  }
+});
+
+//******************************************/
+//*** Create a attending to event route ***/
+//****************************************/
+router.post('/attending', async (req, res) => {
+  try {
+    console.log(req.body);
+    const userName = req.body.userName;
+    const eventId = req.body.eventId;
+    const event = await Events.findById({ _id: eventId });
+    const matchUser = event.participant.filter((participant) => {
+      return participant == userName;
+    });
+    if (matchUser[0] == userName) {
+      await Events.updateOne(
+        { _id: eventId },
+        { $pullAll: { participant: [userName] } }
+      );
+
+      console.log('if match', event.participant);
+      return res.status(200).json({
+        msg: `Dont participating to event ${event.name}`,
+      });
+    } else {
+      await Events.updateOne(
+        { _id: eventId },
+        { $push: { participant: [userName] } }
+      );
+      console.log('dont match', event.participant);
+      return res.status(200).json({
+        msg: `Participating to event ${event.name}`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      msg: 'Something went wrong.',
+    });
+  }
+});
+
+//******************************************/
+//*** Create a like event route ***/
+//****************************************/
+router.post('/like', async (req, res) => {
+  try {
+    console.log(req.body);
+    const userName = req.body.userName;
+    const eventId = req.body.eventId;
+    const event = await Events.findById({ _id: eventId });
+    const matchUser = event.likes.filter((likes) => {
+      return likes == userName;
+    });
+    if (matchUser[0] == userName) {
+      await Events.updateOne(
+        { _id: eventId },
+        { $pullAll: { likes: [userName] } }
+      );
+
+      console.log('if match', event.likes);
+      return res.status(200).json({
+        msg: `Unlike event: ${event.name}`,
+      });
+    } else {
+      await Events.updateOne(
+        { _id: eventId },
+        { $push: { likes: [userName] } }
+      );
+      console.log('dont match', event.participant);
+      return res.status(200).json({
+        msg: `Like Event ${event.name}`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      msg: 'Something went wrong.',
+    });
+  }
+});
 module.exports = router;
