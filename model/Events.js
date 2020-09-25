@@ -23,6 +23,10 @@ const EventSchema = new Schema({
     type: String,
     required: true,
   },
+  description: {
+    type: String,
+    required: true,
+  },
   participant: {
     type: Array,
     required: false,

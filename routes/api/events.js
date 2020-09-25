@@ -6,13 +6,14 @@ const Events = require('../../model/Events');
 //*** Register Events: api/events/register ***/
 //*******************************************/
 router.post('/register', async (req, res) => {
-  let { name, place, date, typeOfEvent, createdBy } = req.body;
+  let { name, place, date, typeOfEvent, createdBy, description } = req.body;
   if (
     name == '' ||
     place == '' ||
     date == '' ||
     typeOfEvent == '' ||
-    createdBy == ''
+    createdBy == '' ||
+    description == ''
   ) {
     return res.status(400).json({
       msg: 'Please fill data all requred data.',
@@ -33,6 +34,7 @@ router.post('/register', async (req, res) => {
       date,
       typeOfEvent,
       createdBy,
+      description,
     });
 
     newEvent.save().then((event) => {
@@ -100,6 +102,7 @@ router.post('/attending', async (req, res) => {
       return participant == userName;
     });
     if (matchUser[0] == userName) {
+      console.log('matches');
       await Events.updateOne(
         { _id: eventId },
         { $pullAll: { participant: [userName] } }
@@ -110,6 +113,7 @@ router.post('/attending', async (req, res) => {
         msg: `Dont participating to event ${event.name}`,
       });
     } else {
+      console.log('dont matches');
       await Events.updateOne(
         { _id: eventId },
         { $push: { participant: [userName] } }
